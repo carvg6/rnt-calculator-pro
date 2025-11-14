@@ -25,6 +25,7 @@ const StatusCalculator = () => {
   const [errors, setErrors] = useState<{
     xRnt?: string;
     rntToBuy?: string;
+    paymentMethod?: string;
   }>({});
   const resultRef = useRef<HTMLDivElement>(null);
   const {
@@ -55,12 +56,16 @@ const StatusCalculator = () => {
     const newErrors: {
       xRnt?: string;
       rntToBuy?: string;
+      paymentMethod?: string;
     } = {};
     if (xRntAmount && (isNaN(parseFloat(xRntAmount)) || parseFloat(xRntAmount) < 0)) {
       newErrors.xRnt = "Por favor, introduce solo números válidos";
     }
     if (!rntToBuy || isNaN(parseFloat(rntToBuy)) || parseFloat(rntToBuy) <= 0) {
       newErrors.rntToBuy = "Por favor, introduce una cantidad válida de RNT";
+    }
+    if (!paymentMethod) {
+      newErrors.paymentMethod = "Por favor, selecciona un método de pago";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -193,8 +198,11 @@ const StatusCalculator = () => {
                 <Label htmlFor="payment" className="text-accent font-semibold mb-2 block">
                   Método de pago
                 </Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="bg-input border-none text-foreground">
+                <Select value={paymentMethod} onValueChange={(value) => {
+                  setPaymentMethod(value);
+                  setErrors(prev => ({ ...prev, paymentMethod: undefined }));
+                }}>
+                  <SelectTrigger className={`bg-input border-none text-foreground ${errors.paymentMethod ? "border-2 border-red-500" : ""}`}>
                     <SelectValue placeholder="Selecciona..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -203,6 +211,7 @@ const StatusCalculator = () => {
                     <SelectItem value="crypto">Cripto (USDT / USDC en Polygon)</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.paymentMethod && <p className="text-sm text-red-500 mt-1">{errors.paymentMethod}</p>}
                 <p className="text-sm text-muted-foreground mt-2">
                   ¿Prefieres pagar por transferencia en €/$ o con USDT/USDC en Polygon?
                 </p>
@@ -285,7 +294,46 @@ const StatusCalculator = () => {
 
         {/* Results Section - Full Width */}
         {showResults && <Card ref={resultRef} className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
-            <h3 className="text-accent font-bold text-xl mb-6">Resultado del cálculo:</h3>
+            <div className="flex items-center justify-center mb-6">
+              <img src={logo} alt="Reental Logo" className="w-16 h-16" />
+            </div>
+            <h3 className="text-accent font-bold text-xl mb-6 text-center">Resultado del cálculo</h3>
+
+            {/* Client Information */}
+            <div className="grid md:grid-cols-2 gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
+              <div>
+                <span className="text-muted-foreground text-sm block">xRNT del cliente:</span>
+                <span className="font-semibold text-foreground">{xRntAmount ? formatNumber(parseFloat(xRntAmount), 0) : '0'} xRNT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">RNT a comprar:</span>
+                <span className="font-semibold text-foreground">{formatNumber(parseFloat(rntToBuy), 0)} RNT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Estatus:</span>
+                <span className="font-semibold text-foreground">{statusType === "reentelpro" ? "ReentelPro" : "SuperReentel"}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Método de pago:</span>
+                <span className="font-semibold text-foreground">
+                  {paymentMethod === "transfer-eur" ? "Transferencia en €" : 
+                   paymentMethod === "transfer-usd" ? "Transferencia en $" : 
+                   "Cripto (USDT/USDC)"}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Precio $RNT:</span>
+                <span className="font-semibold text-foreground">{formatNumber(rntPrice, 4)} USDT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Cambio USDT → EUR:</span>
+                <span className="font-semibold text-foreground">{formatNumber(usdtEurRate, 4)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Descuento aplicado:</span>
+                <span className="font-semibold text-green-600 dark:text-green-400">{calculatedDiscount}%</span>
+              </div>
+            </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
