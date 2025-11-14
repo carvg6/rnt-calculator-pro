@@ -11,14 +11,15 @@ import { formatNumber } from '@/lib/utils';
 import { Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 const StatusCalculator = () => {
-  const [xRntAmount, setXRntAmount] = useState<string>('8000');
-  const [statusType, setStatusType] = useState<string>('reentelpro');
+  const [xRntAmount, setXRntAmount] = useState<string>('');
+  const [statusType, setStatusType] = useState<string>('superreentel');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [rntToBuy, setRntToBuy] = useState<string>('');
-  const [calculatedDiscount, setCalculatedDiscount] = useState<number>(20);
+  const [calculatedDiscount, setCalculatedDiscount] = useState<number>(30);
   const [finalPrice, setFinalPrice] = useState<number>(0);
   const [showResults, setShowResults] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [errors, setErrors] = useState<{ xRnt?: string; rntToBuy?: string }>({});
   const {
     rntPrice,
     usdtEurRate,
@@ -43,16 +44,44 @@ const StatusCalculator = () => {
     const discount = statusType === 'superreentel' && xRnt >= 8000 ? 30 : 20;
     setCalculatedDiscount(discount);
   }, [xRntAmount, statusType]);
+
+  const validateInputs = () => {
+    const newErrors: { xRnt?: string; rntToBuy?: string } = {};
+    
+    if (xRntAmount && (isNaN(parseFloat(xRntAmount)) || parseFloat(xRntAmount) < 0)) {
+      newErrors.xRnt = 'Por favor, introduce solo números válidos';
+    }
+    
+    if (!rntToBuy || isNaN(parseFloat(rntToBuy)) || parseFloat(rntToBuy) <= 0) {
+      newErrors.rntToBuy = 'Por favor, introduce una cantidad válida de RNT';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const calculateFinalPrice = () => {
-    const rntQuantity = parseFloat(rntToBuy) || 0;
-    if (rntQuantity === 0) {
+    if (!validateInputs()) {
       return;
     }
-    const basePrice = rntQuantity * rntPrice;
+    
+    const rntQuantity = parseFloat(rntToBuy) || 0;
+    const basePrice = rntQuantity * rntPrice * 10;
     const discountMultiplier = (100 - calculatedDiscount) / 100;
-    const priceWithDiscount = (basePrice * discountMultiplier) / 10;
+    const priceWithDiscount = basePrice * discountMultiplier;
     setFinalPrice(priceWithDiscount);
     setShowResults(true);
+  };
+
+  const resetCalculator = () => {
+    setXRntAmount('');
+    setStatusType('superreentel');
+    setPaymentMethod('');
+    setRntToBuy('');
+    setCalculatedDiscount(30);
+    setFinalPrice(0);
+    setShowResults(false);
+    setErrors({});
   };
   const calculateMissing = () => {
     const current = parseFloat(xRntAmount) || 0;
@@ -82,7 +111,18 @@ const StatusCalculator = () => {
                 <Label htmlFor="xrnt" className="text-accent font-semibold mb-2 block">
                   $xRNT del cliente
                 </Label>
-                <Input id="xrnt" type="number" value={xRntAmount} onChange={e => setXRntAmount(e.target.value)} className="bg-input border-none text-foreground" placeholder="Ej: 8000, 10000, 28000..." />
+                <Input 
+                  id="xrnt" 
+                  type="number" 
+                  value={xRntAmount} 
+                  onChange={e => {
+                    setXRntAmount(e.target.value);
+                    setErrors(prev => ({ ...prev, xRnt: undefined }));
+                  }} 
+                  className={`bg-input border-none text-foreground ${errors.xRnt ? 'border-2 border-red-500' : ''}`} 
+                  placeholder="Ej: 8000, 10000, 28000..." 
+                />
+                {errors.xRnt && <p className="text-sm text-red-500 mt-1">{errors.xRnt}</p>}
               </div>
 
               <RadioGroup value={statusType} onValueChange={setStatusType}>
@@ -153,7 +193,18 @@ const StatusCalculator = () => {
                 <Label htmlFor="rnt-amount" className="text-accent font-semibold mb-2 block">
                   Cantidad de $RNT a comprar
                 </Label>
-                <Input id="rnt-amount" type="number" value={rntToBuy} onChange={e => setRntToBuy(e.target.value)} className="bg-input border-none text-foreground" placeholder="Ej: 8000 o 28000" />
+                <Input 
+                  id="rnt-amount" 
+                  type="number" 
+                  value={rntToBuy} 
+                  onChange={e => {
+                    setRntToBuy(e.target.value);
+                    setErrors(prev => ({ ...prev, rntToBuy: undefined }));
+                  }} 
+                  className={`bg-input border-none text-foreground ${errors.rntToBuy ? 'border-2 border-red-500' : ''}`} 
+                  placeholder="Ej: 8000 o 28000" 
+                />
+                {errors.rntToBuy && <p className="text-sm text-red-500 mt-1">{errors.rntToBuy}</p>}
                 <p className="text-sm text-muted-foreground mt-1">
                   Introduce los RNT que el cliente necesita adquirir.
                 </p>
@@ -194,9 +245,14 @@ const StatusCalculator = () => {
                 </p>
               </div>
 
-              <Button onClick={calculateFinalPrice} className="w-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold py-6 text-lg">
-                Calcular precio final
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={calculateFinalPrice} className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold py-6 text-lg">
+                  Calcular precio final
+                </Button>
+                <Button onClick={resetCalculator} variant="outline" className="bg-transparent border-2 border-muted-foreground text-muted-foreground hover:bg-muted-foreground hover:text-background font-semibold py-6">
+                  Resetear
+                </Button>
+              </div>
 
               {showResults && <div className="mt-6 p-6 bg-accent/10 border-2 border-accent rounded-lg space-y-4">
                   <h3 className="text-accent font-bold text-lg mb-4">Resultado del cálculo:</h3>
@@ -205,14 +261,14 @@ const StatusCalculator = () => {
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Precio sin descuento:</span>
                       <span className="font-semibold text-foreground">
-                        {formatNumber((parseFloat(rntToBuy) * rntPrice) / 10, 2)} USDT
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice * 10, 2)} USDT
                       </span>
                     </div>
                     
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
                       <span className="font-semibold text-green-600 dark:text-green-400">
-                        -{formatNumber(((parseFloat(rntToBuy) * rntPrice) / 10) * calculatedDiscount / 100, 2)} USDT
+                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * 10) * calculatedDiscount / 100, 2)} USDT
                       </span>
                     </div>
                     
@@ -231,7 +287,7 @@ const StatusCalculator = () => {
                   
                   <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
-                      💰 Te ahorras {formatNumber(((parseFloat(rntToBuy) * rntPrice) / 10) * calculatedDiscount / 100, 2)} USDT con este descuento
+                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * 10) * calculatedDiscount / 100, 2)} USDT con este descuento
                     </p>
                   </div>
                 </div>}
