@@ -234,12 +234,6 @@ const StatusCalculator = () => {
                     ? "Cargando precio en tiempo real..."
                     : "Precio en tiempo real del $RNT en el par RNT/USDT (Polygon)."}
                 </p>
-                <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                    ⚠️ El precio proporcionado tendrá una validez de 24 horas, pasado este tiempo ya no será válido y
-                    tendrá que calcularlo de nuevo.
-                  </p>
-                </div>
               </div>
 
               <div>
@@ -353,17 +347,25 @@ const StatusCalculator = () => {
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-              <p className="text-base text-green-600 dark:text-green-400 font-medium text-center">
-                💰 Te ahorras{" "}
-                {paymentMethod === "transfer-eur"
-                  ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
-                    " EUR"
-                  : paymentMethod === "transfer-usd"
-                  ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
-                  : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}{" "}
-                con este descuento
-              </p>
+            <div className="mt-6 space-y-3">
+              <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <p className="text-base text-green-600 dark:text-green-400 font-medium text-center">
+                  💰 Te ahorras{" "}
+                  {paymentMethod === "transfer-eur"
+                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
+                      " EUR"
+                    : paymentMethod === "transfer-usd"
+                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
+                    : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}{" "}
+                  con este descuento
+                </p>
+              </div>
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium text-center">
+                  ⚠️ El precio proporcionado tendrá una validez de 24 horas, pasado este tiempo ya no será válido y
+                  tendrá que calcularlo de nuevo.
+                </p>
+              </div>
             </div>
           </Card>
         )}
