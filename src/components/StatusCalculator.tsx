@@ -19,14 +19,16 @@ const StatusCalculator = () => {
   const [finalPrice, setFinalPrice] = useState<number>(0);
   const [showResults, setShowResults] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [errors, setErrors] = useState<{ xRnt?: string; rntToBuy?: string }>({});
+  const [errors, setErrors] = useState<{
+    xRnt?: string;
+    rntToBuy?: string;
+  }>({});
   const {
     rntPrice,
     usdtEurRate,
     loading
   } = useCryptoPrice();
   const walletAddress = '0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1';
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(walletAddress);
@@ -44,27 +46,24 @@ const StatusCalculator = () => {
     const discount = statusType === 'superreentel' && xRnt >= 8000 ? 30 : 20;
     setCalculatedDiscount(discount);
   }, [xRntAmount, statusType]);
-
   const validateInputs = () => {
-    const newErrors: { xRnt?: string; rntToBuy?: string } = {};
-    
+    const newErrors: {
+      xRnt?: string;
+      rntToBuy?: string;
+    } = {};
     if (xRntAmount && (isNaN(parseFloat(xRntAmount)) || parseFloat(xRntAmount) < 0)) {
       newErrors.xRnt = 'Por favor, introduce solo números válidos';
     }
-    
     if (!rntToBuy || isNaN(parseFloat(rntToBuy)) || parseFloat(rntToBuy) <= 0) {
       newErrors.rntToBuy = 'Por favor, introduce una cantidad válida de RNT';
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const calculateFinalPrice = () => {
     if (!validateInputs()) {
       return;
     }
-    
     const rntQuantity = parseFloat(rntToBuy) || 0;
     const basePrice = rntQuantity * rntPrice * 10;
     const discountMultiplier = (100 - calculatedDiscount) / 100;
@@ -72,7 +71,6 @@ const StatusCalculator = () => {
     setFinalPrice(priceWithDiscount);
     setShowResults(true);
   };
-
   const resetCalculator = () => {
     setXRntAmount('');
     setStatusType('superreentel');
@@ -111,17 +109,13 @@ const StatusCalculator = () => {
                 <Label htmlFor="xrnt" className="text-accent font-semibold mb-2 block">
                   $xRNT del cliente
                 </Label>
-                <Input 
-                  id="xrnt" 
-                  type="number" 
-                  value={xRntAmount} 
-                  onChange={e => {
-                    setXRntAmount(e.target.value);
-                    setErrors(prev => ({ ...prev, xRnt: undefined }));
-                  }} 
-                  className={`bg-input border-none text-foreground ${errors.xRnt ? 'border-2 border-red-500' : ''}`} 
-                  placeholder="Ej: 8000, 10000, 28000..." 
-                />
+                <Input id="xrnt" type="number" value={xRntAmount} onChange={e => {
+                setXRntAmount(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  xRnt: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.xRnt ? 'border-2 border-red-500' : ''}`} placeholder="Ej: 8000, 10000, 28000..." />
                 {errors.xRnt && <p className="text-sm text-red-500 mt-1">{errors.xRnt}</p>}
               </div>
 
@@ -169,12 +163,7 @@ const StatusCalculator = () => {
                   </Label>
                   <div className="flex gap-2">
                     <Input id="wallet" type="text" value={walletAddress} readOnly className="bg-input border-none text-foreground font-mono text-sm flex-1" />
-                    <Button
-                      type="button"
-                      onClick={copyToClipboard}
-                      className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background"
-                      size="icon"
-                    >
+                    <Button type="button" onClick={copyToClipboard} className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background" size="icon">
                       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
@@ -193,20 +182,16 @@ const StatusCalculator = () => {
                 <Label htmlFor="rnt-amount" className="text-accent font-semibold mb-2 block">
                   Cantidad de $RNT a comprar
                 </Label>
-                <Input 
-                  id="rnt-amount" 
-                  type="number" 
-                  value={rntToBuy} 
-                  onChange={e => {
-                    setRntToBuy(e.target.value);
-                    setErrors(prev => ({ ...prev, rntToBuy: undefined }));
-                  }} 
-                  className={`bg-input border-none text-foreground ${errors.rntToBuy ? 'border-2 border-red-500' : ''}`} 
-                  placeholder="Ej: 8000 o 28000" 
-                />
+                <Input id="rnt-amount" type="number" value={rntToBuy} onChange={e => {
+                setRntToBuy(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  rntToBuy: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.rntToBuy ? 'border-2 border-red-500' : ''}`} placeholder="Ej: 8000 o 28000" />
                 {errors.rntToBuy && <p className="text-sm text-red-500 mt-1">{errors.rntToBuy}</p>}
                 <p className="text-sm text-muted-foreground mt-1">
-                  Introduce los RNT que el cliente necesita adquirir.
+                  RNT que el cliente necesita adquirir para conseguir su estatus.
                 </p>
               </div>
 
@@ -268,7 +253,7 @@ const StatusCalculator = () => {
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
                       <span className="font-semibold text-green-600 dark:text-green-400">
-                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * 10) * calculatedDiscount / 100, 2)} USDT
+                        -{formatNumber(parseFloat(rntToBuy) * rntPrice * 10 * calculatedDiscount / 100, 2)} USDT
                       </span>
                     </div>
                     
@@ -287,7 +272,7 @@ const StatusCalculator = () => {
                   
                   <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
-                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * 10) * calculatedDiscount / 100, 2)} USDT con este descuento
+                      💰 Te ahorras {formatNumber(parseFloat(rntToBuy) * rntPrice * 10 * calculatedDiscount / 100, 2)} USDT con este descuento
                     </p>
                   </div>
                 </div>}
