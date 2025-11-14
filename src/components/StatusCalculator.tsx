@@ -8,10 +8,8 @@ import { useCryptoPrice } from "@/hooks/useCryptoPrice";
 import { Card } from "@/components/ui/card";
 import logo from "@/assets/reental-logo.png";
 import { formatNumber } from "@/lib/utils";
-import { Copy, Check, Download } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 const StatusCalculator = () => {
   const [xRntAmount, setXRntAmount] = useState<string>("");
@@ -27,7 +25,6 @@ const StatusCalculator = () => {
     rntToBuy?: string;
     paymentMethod?: string;
   }>({});
-  const resultRef = useRef<HTMLDivElement>(null);
   const {
     rntPrice,
     usdtEurRate,
@@ -96,55 +93,6 @@ const StatusCalculator = () => {
     const needed = statusType === "reentelpro" ? 14000 : 28000;
     const missing = Math.max(0, needed - current);
     setRntToBuy(missing.toString());
-  };
-
-  const downloadAsImage = async (format: "png" | "jpeg") => {
-    if (!resultRef.current) return;
-
-    try {
-      const canvas = await html2canvas(resultRef.current, {
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card').trim(),
-        scale: 2,
-      });
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `reental-calculo.${format}`;
-          link.click();
-          URL.revokeObjectURL(url);
-          toast.success(`Descargado como ${format.toUpperCase()}`);
-        }
-      }, `image/${format}`);
-    } catch (error) {
-      toast.error("Error al descargar la imagen");
-    }
-  };
-
-  const downloadAsPDF = async () => {
-    if (!resultRef.current) return;
-
-    try {
-      const canvas = await html2canvas(resultRef.current, {
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card').trim(),
-        scale: 2,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "px",
-        format: [canvas.width, canvas.height],
-      });
-
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-      pdf.save("reental-calculo.pdf");
-      toast.success("Descargado como PDF");
-    } catch (error) {
-      toast.error("Error al descargar el PDF");
-    }
   };
   return <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -293,7 +241,7 @@ const StatusCalculator = () => {
         </div>
 
         {/* Results Section - Full Width */}
-        {showResults && <Card ref={resultRef} className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
+        {showResults && <Card className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
             <div className="flex items-center justify-center mb-6">
               <img src={logo} alt="Reental Logo" className="w-16 h-16" />
             </div>
@@ -388,35 +336,6 @@ const StatusCalculator = () => {
                   ⚠️ El precio proporcionado tendrá una validez de 24 horas, pasado este tiempo ya no será válido y
                   tendrá que calcularlo de nuevo.
                 </p>
-              </div>
-
-              <div className="border-t border-accent pt-4">
-                <p className="text-sm text-muted-foreground mb-3 text-center">
-                  Descargar resultado del cálculo:
-                </p>
-                <div className="flex gap-3 justify-center flex-wrap">
-                  <Button
-                    onClick={() => downloadAsImage("png")}
-                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    PNG
-                  </Button>
-                  <Button
-                    onClick={() => downloadAsImage("jpeg")}
-                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    JPEG
-                  </Button>
-                  <Button
-                    onClick={downloadAsPDF}
-                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    PDF
-                  </Button>
-                </div>
               </div>
             </div>
           </Card>}
