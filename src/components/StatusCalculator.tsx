@@ -23,7 +23,11 @@ const StatusCalculator = () => {
     xRnt?: string;
     rntToBuy?: string;
   }>({});
-  const { rntPrice, usdtEurRate, loading } = useCryptoPrice();
+  const {
+    rntPrice,
+    usdtEurRate,
+    loading
+  } = useCryptoPrice();
   const walletAddress = "0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1";
   const copyToClipboard = async () => {
     try {
@@ -84,13 +88,12 @@ const StatusCalculator = () => {
     const missing = Math.max(0, needed - current);
     setRntToBuy(missing.toString());
   };
-  return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+  return <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <img src={logo} alt="Reental Logo" className="w-24 h-24 mx-auto mb-4" />
-          <h1 className="text-4xl font-bold text-accent mb-2">Calculadora de Status</h1>
+          <h1 className="text-4xl font-bold text-accent mb-2">Calculadora de Estatus</h1>
         </div>
 
         {/* Main Grid */}
@@ -104,20 +107,13 @@ const StatusCalculator = () => {
                 <Label htmlFor="xrnt" className="text-accent font-semibold mb-2 block">
                   $xRNT del cliente
                 </Label>
-                <Input
-                  id="xrnt"
-                  type="number"
-                  value={xRntAmount}
-                  onChange={(e) => {
-                    setXRntAmount(e.target.value);
-                    setErrors((prev) => ({
-                      ...prev,
-                      xRnt: undefined,
-                    }));
-                  }}
-                  className={`bg-input border-none text-foreground ${errors.xRnt ? "border-2 border-red-500" : ""}`}
-                  placeholder="Ej: 8000, 10000, 28000..."
-                />
+                <Input id="xrnt" type="number" value={xRntAmount} onChange={e => {
+                setXRntAmount(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  xRnt: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.xRnt ? "border-2 border-red-500" : ""}`} placeholder="Ej: 8000, 10000, 28000..." />
                 {errors.xRnt && <p className="text-sm text-red-500 mt-1">{errors.xRnt}</p>}
               </div>
 
@@ -136,10 +132,7 @@ const StatusCalculator = () => {
                 </div>
               </RadioGroup>
 
-              <Button
-                onClick={calculateMissing}
-                className="w-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
-              >
+              <Button onClick={calculateMissing} className="w-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold">
                 Calcular faltantes
               </Button>
 
@@ -162,30 +155,17 @@ const StatusCalculator = () => {
                 </p>
               </div>
 
-              {paymentMethod === "crypto" && (
-                <div>
+              {paymentMethod === "crypto" && <div>
                   <Label htmlFor="wallet" className="text-accent font-semibold mb-2 block">
                     Wallet (para pagos en USDT/USDC Polygon)
                   </Label>
                   <div className="flex gap-2">
-                    <Input
-                      id="wallet"
-                      type="text"
-                      value={walletAddress}
-                      readOnly
-                      className="bg-input border-none text-foreground font-mono text-sm flex-1"
-                    />
-                    <Button
-                      type="button"
-                      onClick={copyToClipboard}
-                      className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background"
-                      size="icon"
-                    >
+                    <Input id="wallet" type="text" value={walletAddress} readOnly className="bg-input border-none text-foreground font-mono text-sm flex-1" />
+                    <Button type="button" onClick={copyToClipboard} className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background" size="icon">
                       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </div>
           </Card>
 
@@ -198,20 +178,13 @@ const StatusCalculator = () => {
                 <Label htmlFor="rnt-amount" className="text-accent font-semibold mb-2 block">
                   Cantidad de $RNT a comprar
                 </Label>
-                <Input
-                  id="rnt-amount"
-                  type="number"
-                  value={rntToBuy}
-                  onChange={(e) => {
-                    setRntToBuy(e.target.value);
-                    setErrors((prev) => ({
-                      ...prev,
-                      rntToBuy: undefined,
-                    }));
-                  }}
-                  className={`bg-input border-none text-foreground ${errors.rntToBuy ? "border-2 border-red-500" : ""}`}
-                  placeholder="Ej: 8000 o 28000"
-                />
+                <Input id="rnt-amount" type="number" value={rntToBuy} onChange={e => {
+                setRntToBuy(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  rntToBuy: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.rntToBuy ? "border-2 border-red-500" : ""}`} placeholder="Ej: 8000 o 28000" />
                 {errors.rntToBuy && <p className="text-sm text-red-500 mt-1">{errors.rntToBuy}</p>}
                 <p className="text-sm text-muted-foreground mt-1">
                   RNT que el cliente necesita adquirir para conseguir su estatus.
@@ -222,17 +195,9 @@ const StatusCalculator = () => {
                 <Label htmlFor="rnt-price" className="text-accent font-semibold mb-2 block">
                   Precio $RNT (USDT por 1 $RNT)
                 </Label>
-                <Input
-                  id="rnt-price"
-                  type="text"
-                  value={formatNumber(rntPrice, 4)}
-                  readOnly
-                  className="bg-input border-none text-foreground"
-                />
+                <Input id="rnt-price" type="text" value={formatNumber(rntPrice, 4)} readOnly className="bg-input border-none text-foreground" />
                 <p className="text-sm text-muted-foreground mt-1">
-                  {loading
-                    ? "Cargando precio en tiempo real..."
-                    : "Precio en tiempo real del $RNT en el par RNT/USDT (Polygon)."}
+                  {loading ? "Cargando precio en tiempo real..." : "Precio en tiempo real del $RNT en el par RNT/USDT (Polygon)."}
                 </p>
               </div>
 
@@ -240,44 +205,24 @@ const StatusCalculator = () => {
                 <Label htmlFor="usdt-eur" className="text-accent font-semibold mb-2 block">
                   Cambio USDT → EUR
                 </Label>
-                <Input
-                  id="usdt-eur"
-                  type="text"
-                  value={formatNumber(usdtEurRate, 4)}
-                  readOnly
-                  className="bg-input border-none text-foreground"
-                />
+                <Input id="usdt-eur" type="text" value={formatNumber(usdtEurRate, 4)} readOnly className="bg-input border-none text-foreground" />
               </div>
 
               <div>
                 <Label htmlFor="discount" className="text-accent font-semibold mb-2 block">
                   % Descuento aplicado
                 </Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  value={calculatedDiscount}
-                  readOnly
-                  className="bg-input border-none text-foreground"
-                />
+                <Input id="discount" type="number" value={calculatedDiscount} readOnly className="bg-input border-none text-foreground" />
                 <p className="text-sm text-muted-foreground mt-1">
-                  {statusType === "superreentel" && parseFloat(xRntAmount) >= 8000
-                    ? "30% de descuento (ReentelPro con +8000 xRNT)"
-                    : "20% de descuento"}
+                  {statusType === "superreentel" && parseFloat(xRntAmount) >= 8000 ? "30% de descuento (ReentelPro con +8000 xRNT)" : "20% de descuento"}
                 </p>
               </div>
 
               <div className="flex gap-4">
-                <Button
-                  onClick={calculateFinalPrice}
-                  className="flex-1 bg-accent text-background hover:bg-accent/90 font-semibold"
-                >
+                <Button onClick={calculateFinalPrice} className="flex-1 bg-accent text-background hover:bg-accent/90 font-semibold">
                   Calcular
                 </Button>
-                <Button
-                  onClick={resetCalculator}
-                  className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
-                >
+                <Button onClick={resetCalculator} className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold">
                   Resetear
                 </Button>
               </div>
@@ -286,37 +231,30 @@ const StatusCalculator = () => {
         </div>
 
         {/* Results Section - Full Width */}
-        {showResults && (
-          <Card className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
+        {showResults && <Card className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
             <h3 className="text-accent font-bold text-xl mb-6">Resultado del cálculo:</h3>
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <span className="text-muted-foreground text-sm block">Precio sin descuento:</span>
                 <div>
-                  {paymentMethod === "transfer-eur" ? (
-                    <>
+                  {paymentMethod === "transfer-eur" ? <>
                       <span className="font-bold text-foreground text-2xl block">
                         {formatNumber(parseFloat(rntToBuy) * rntPrice * usdtEurRate, 2)} EUR
                       </span>
                       <span className="text-muted-foreground text-sm block">
                         ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
                       </span>
-                    </>
-                  ) : paymentMethod === "transfer-usd" ? (
-                    <>
+                    </> : paymentMethod === "transfer-usd" ? <>
                       <span className="font-bold text-foreground text-2xl block">
                         {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USD
                       </span>
                       <span className="text-muted-foreground text-sm block">
                         ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
                       </span>
-                    </>
-                  ) : (
-                    <span className="font-bold text-foreground text-2xl block">
+                    </> : <span className="font-bold text-foreground text-2xl block">
                       {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
-                    </span>
-                  )}
+                    </span>}
                 </div>
               </div>
 
@@ -324,25 +262,14 @@ const StatusCalculator = () => {
                 <span className="text-muted-foreground text-sm block">Descuento aplicado ({calculatedDiscount}%):</span>
                 <span className="font-bold text-green-600 dark:text-green-400 text-2xl block">
                   -
-                  {paymentMethod === "transfer-eur"
-                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
-                      " EUR"
-                    : paymentMethod === "transfer-usd"
-                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
-                    : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}
+                  {paymentMethod === "transfer-eur" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate / 100, 2) + " EUR" : paymentMethod === "transfer-usd" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USD" : formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USDT"}
                 </span>
               </div>
 
               <div className="space-y-2">
                 <span className="text-accent font-bold text-sm block">TOTAL A PAGAR:</span>
                 <div className="text-right md:text-left">
-                  {paymentMethod === "transfer-eur" ? (
-                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice * usdtEurRate, 2)} EUR</p>
-                  ) : paymentMethod === "transfer-usd" ? (
-                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p>
-                  ) : (
-                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>
-                  )}
+                  {paymentMethod === "transfer-eur" ? <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice * usdtEurRate, 2)} EUR</p> : paymentMethod === "transfer-usd" ? <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p> : <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>}
                 </div>
               </div>
             </div>
@@ -351,12 +278,7 @@ const StatusCalculator = () => {
               <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <p className="text-base text-green-600 dark:text-green-400 font-medium text-center">
                   💰 Te ahorras{" "}
-                  {paymentMethod === "transfer-eur"
-                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
-                      " EUR"
-                    : paymentMethod === "transfer-usd"
-                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
-                    : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}{" "}
+                  {paymentMethod === "transfer-eur" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate / 100, 2) + " EUR" : paymentMethod === "transfer-usd" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USD" : formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USDT"}{" "}
                   con este descuento
                 </p>
               </div>
@@ -367,15 +289,13 @@ const StatusCalculator = () => {
                 </p>
               </div>
             </div>
-          </Card>
-        )}
+          </Card>}
 
         {/* Footer */}
         <div className="text-center text-muted-foreground text-sm border-t border-accent pt-4">
           Reental · Calculadora $RNT · Uso interno comercial
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
 export default StatusCalculator;
