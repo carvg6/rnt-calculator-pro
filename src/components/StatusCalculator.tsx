@@ -8,6 +8,8 @@ import { useCryptoPrice } from '@/hooks/useCryptoPrice';
 import { Card } from '@/components/ui/card';
 import logo from '@/assets/reental-logo.png';
 import { formatNumber } from '@/lib/utils';
+import { Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 const StatusCalculator = () => {
   const [xRntAmount, setXRntAmount] = useState<string>('8000');
   const [statusType, setStatusType] = useState<string>('reentelpro');
@@ -16,12 +18,24 @@ const StatusCalculator = () => {
   const [calculatedDiscount, setCalculatedDiscount] = useState<number>(20);
   const [finalPrice, setFinalPrice] = useState<number>(0);
   const [showResults, setShowResults] = useState(false);
+  const [copied, setCopied] = useState(false);
   const {
     rntPrice,
     usdtEurRate,
     loading
   } = useCryptoPrice();
   const walletAddress = '0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1';
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      toast.success('Wallet copiada al portapapeles');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Error al copiar la wallet');
+    }
+  };
 
   // Calculate discount based on xRNT amount and status type
   useEffect(() => {
@@ -36,13 +50,13 @@ const StatusCalculator = () => {
     }
     const basePrice = rntQuantity * rntPrice;
     const discountMultiplier = (100 - calculatedDiscount) / 100;
-    const priceWithDiscount = basePrice * discountMultiplier;
+    const priceWithDiscount = (basePrice * discountMultiplier) / 10;
     setFinalPrice(priceWithDiscount);
     setShowResults(true);
   };
   const calculateMissing = () => {
     const current = parseFloat(xRntAmount) || 0;
-    const needed = statusType === 'reentelpro' ? 8000 : 28000;
+    const needed = statusType === 'reentelpro' ? 14000 : 28000;
     const missing = Math.max(0, needed - current);
     setRntToBuy(missing.toString());
   };
@@ -113,7 +127,17 @@ const StatusCalculator = () => {
                   <Label htmlFor="wallet" className="text-accent font-semibold mb-2 block">
                     Wallet (para pagos en USDT/USDC Polygon)
                   </Label>
-                  <Input id="wallet" type="text" value={walletAddress} readOnly className="bg-input border-none text-foreground font-mono text-sm" />
+                  <div className="flex gap-2">
+                    <Input id="wallet" type="text" value={walletAddress} readOnly className="bg-input border-none text-foreground font-mono text-sm flex-1" />
+                    <Button
+                      type="button"
+                      onClick={copyToClipboard}
+                      className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background"
+                      size="icon"
+                    >
+                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>}
             </div>
           </Card>
@@ -181,14 +205,14 @@ const StatusCalculator = () => {
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Precio sin descuento:</span>
                       <span className="font-semibold text-foreground">
-                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                        {formatNumber((parseFloat(rntToBuy) * rntPrice) / 10, 2)} USDT
                       </span>
                     </div>
                     
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
                       <span className="font-semibold text-green-600 dark:text-green-400">
-                        -{formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2)} USDT
+                        -{formatNumber(((parseFloat(rntToBuy) * rntPrice) / 10) * calculatedDiscount / 100, 2)} USDT
                       </span>
                     </div>
                     
@@ -207,7 +231,7 @@ const StatusCalculator = () => {
                   
                   <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
-                      💰 Te ahorras {formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2)} USDT con este descuento
+                      💰 Te ahorras {formatNumber(((parseFloat(rntToBuy) * rntPrice) / 10) * calculatedDiscount / 100, 2)} USDT con este descuento
                     </p>
                   </div>
                 </div>}
