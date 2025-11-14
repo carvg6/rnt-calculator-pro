@@ -295,14 +295,14 @@ const StatusCalculator = () => {
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Precio sin descuento:</span>
                       <span className="font-semibold text-foreground">
-                        {formatNumber(parseFloat(rntToBuy) * rntPrice * 10, 2)} USDT
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center pb-2 border-b border-accent/30">
                       <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
                       <span className="font-semibold text-green-600 dark:text-green-400">
-                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * 10 * calculatedDiscount) / 100, 2)} USDT
+                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT
                       </span>
                     </div>
 
@@ -319,8 +319,8 @@ const StatusCalculator = () => {
 
                   <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
-                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * 10 * calculatedDiscount) / 100, 2)}{" "}
-                      USDT con este descuento
+                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT
+                      con este descuento
                     </p>
                   </div>
                 </div>
