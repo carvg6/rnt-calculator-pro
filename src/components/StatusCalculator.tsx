@@ -299,9 +299,31 @@ const StatusCalculator = () => {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <span className="text-muted-foreground text-sm block">Precio sin descuento:</span>
-                <span className="font-bold text-foreground text-2xl block">
-                  {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
-                </span>
+                <div>
+                  {paymentMethod === "transfer-eur" ? (
+                    <>
+                      <span className="font-bold text-foreground text-2xl block">
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice * usdtEurRate, 2)} EUR
+                      </span>
+                      <span className="text-muted-foreground text-sm block">
+                        ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                      </span>
+                    </>
+                  ) : paymentMethod === "transfer-usd" ? (
+                    <>
+                      <span className="font-bold text-foreground text-2xl block">
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USD
+                      </span>
+                      <span className="text-muted-foreground text-sm block">
+                        ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-foreground text-2xl block">
+                      {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
