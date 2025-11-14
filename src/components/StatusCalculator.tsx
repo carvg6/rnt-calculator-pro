@@ -287,66 +287,64 @@ const StatusCalculator = () => {
                   Resetear
                 </Button>
               </div>
-
-              {showResults && (
-                <div className="mt-6 p-6 bg-accent/10 border-2 border-accent rounded-lg space-y-4">
-                  <h3 className="text-accent font-bold text-lg mb-4">Resultado del cálculo:</h3>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center pb-2 border-b border-accent/30">
-                      <span className="text-muted-foreground">Precio sin descuento:</span>
-                      <span className="font-semibold text-foreground">
-                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center pb-2 border-b border-accent/30">
-                      <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
-                      <span className="font-semibold text-green-600 dark:text-green-400">
-                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-accent font-bold text-lg">TOTAL A PAGAR:</span>
-                      <div className="text-right">
-                        {paymentMethod === "transfer-eur" ? (
-                          <>
-                            <p className="text-2xl font-bold text-accent">
-                              {formatNumber(finalPrice * usdtEurRate, 2)} EUR
-                            </p>
-                            <p className="text-lg text-muted-foreground">≈ {formatNumber(finalPrice, 2)} USDT</p>
-                          </>
-                        ) : paymentMethod === "transfer-usd" ? (
-                          <>
-                            <p className="text-2xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p>
-                            <p className="text-lg text-muted-foreground">
-                              ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-2xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>
-                            <p className="text-lg text-muted-foreground">
-                              ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
-                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT
-                      con este descuento
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </Card>
         </div>
+
+        {/* Results Section - Full Width */}
+        {showResults && (
+          <Card className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
+            <h3 className="text-accent font-bold text-xl mb-6">Resultado del cálculo:</h3>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <span className="text-muted-foreground text-sm block">Precio sin descuento:</span>
+                <span className="font-bold text-foreground text-2xl block">
+                  {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-muted-foreground text-sm block">Descuento aplicado ({calculatedDiscount}%):</span>
+                <span className="font-bold text-green-600 dark:text-green-400 text-2xl block">
+                  -
+                  {paymentMethod === "transfer-eur"
+                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
+                      " EUR"
+                    : paymentMethod === "transfer-usd"
+                    ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
+                    : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-accent font-bold text-sm block">TOTAL A PAGAR:</span>
+                <div className="text-right md:text-left">
+                  {paymentMethod === "transfer-eur" ? (
+                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice * usdtEurRate, 2)} EUR</p>
+                  ) : paymentMethod === "transfer-usd" ? (
+                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p>
+                  ) : (
+                    <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <p className="text-base text-green-600 dark:text-green-400 font-medium text-center">
+                💰 Te ahorras{" "}
+                {paymentMethod === "transfer-eur"
+                  ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate) / 100, 2) +
+                    " EUR"
+                  : paymentMethod === "transfer-usd"
+                  ? formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USD"
+                  : formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2) + " USDT"}{" "}
+                con este descuento
+              </p>
+            </div>
+          </Card>
+        )}
 
         {/* Footer */}
         <div className="text-center text-muted-foreground text-sm border-t border-accent pt-4">
