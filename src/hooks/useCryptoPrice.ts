@@ -17,7 +17,7 @@ export const useCryptoPrice = () => {
         
         // For demo purposes, using a simulated RNT price
         // In production, replace with actual RNT token
-        setRntPrice(18.3);
+        setRntPrice(0.183);
 
         // Fetch USDT/EUR rate
         const usdtEurResponse = await fetch(
@@ -30,7 +30,7 @@ export const useCryptoPrice = () => {
       } catch (error) {
         console.error('Error fetching prices:', error);
         // Fallback prices
-        setRntPrice(18.3);
+        setRntPrice(0.183);
         setUsdtEurRate(0.94);
         setLoading(false);
       }
