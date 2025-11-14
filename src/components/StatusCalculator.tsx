@@ -180,6 +180,11 @@ const StatusCalculator = () => {
                 <p className="text-sm text-muted-foreground mt-1">
                   {loading ? 'Cargando precio en tiempo real...' : 'Precio en tiempo real del $RNT en el par RNT/USDT (Polygon).'}
                 </p>
+                <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                    ⚠️ El precio proporcionado tendrá una validez de 24 horas, pasado este tiempo ya no será válido y tendrá que calcularlo de nuevo.
+                  </p>
+                </div>
               </div>
 
               <div>
@@ -224,14 +229,42 @@ const StatusCalculator = () => {
               </Button>
 
               {showResults && (
-                <div className="mt-6 p-4 bg-accent/10 border-2 border-accent rounded-lg">
-                  <h3 className="text-accent font-bold mb-2">Resultado:</h3>
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatNumber(finalPrice, 2)} USDT
-                  </p>
-                  <p className="text-lg text-muted-foreground">
-                    ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
-                  </p>
+                <div className="mt-6 p-6 bg-accent/10 border-2 border-accent rounded-lg space-y-4">
+                  <h3 className="text-accent font-bold text-lg mb-4">Resultado del cálculo:</h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center pb-2 border-b border-accent/30">
+                      <span className="text-muted-foreground">Precio sin descuento:</span>
+                      <span className="font-semibold text-foreground">
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pb-2 border-b border-accent/30">
+                      <span className="text-muted-foreground">Descuento aplicado ({calculatedDiscount}%):</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">
+                        -{formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-accent font-bold text-lg">TOTAL A PAGAR:</span>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-accent">
+                          {formatNumber(finalPrice, 2)} USDT
+                        </p>
+                        <p className="text-lg text-muted-foreground">
+                          ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium text-center">
+                      💰 Te ahorras {formatNumber((parseFloat(rntToBuy) * rntPrice * calculatedDiscount) / 100, 2)} USDT con este descuento
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
