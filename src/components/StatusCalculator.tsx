@@ -268,7 +268,7 @@ const StatusCalculator = () => {
                 />
                 <p className="text-sm text-muted-foreground mt-1">
                   {statusType === "superreentel" && parseFloat(xRntAmount) >= 8000
-                    ? "30% de descuento (SuperReentel con +8000 xRNT)"
+                    ? "30% de descuento (ReentelPro con +8000 xRNT)"
                     : "20% de descuento"}
                 </p>
               </div>
@@ -315,24 +315,18 @@ const StatusCalculator = () => {
                             <p className="text-2xl font-bold text-accent">
                               {formatNumber(finalPrice * usdtEurRate, 2)} EUR
                             </p>
-                            <p className="text-lg text-muted-foreground">
-                              ≈ {formatNumber(finalPrice, 2)} USDT
-                            </p>
+                            <p className="text-lg text-muted-foreground">≈ {formatNumber(finalPrice, 2)} USDT</p>
                           </>
                         ) : paymentMethod === "transfer-usd" ? (
                           <>
-                            <p className="text-2xl font-bold text-accent">
-                              {formatNumber(finalPrice, 2)} USD
-                            </p>
+                            <p className="text-2xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p>
                             <p className="text-lg text-muted-foreground">
                               ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
                             </p>
                           </>
                         ) : (
                           <>
-                            <p className="text-2xl font-bold text-accent">
-                              {formatNumber(finalPrice, 2)} USDT
-                            </p>
+                            <p className="text-2xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>
                             <p className="text-lg text-muted-foreground">
                               ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
                             </p>
