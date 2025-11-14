@@ -25,6 +25,7 @@ const StatusCalculator = () => {
   const [errors, setErrors] = useState<{
     xRnt?: string;
     rntToBuy?: string;
+    paymentMethod?: string;
   }>({});
   const resultRef = useRef<HTMLDivElement>(null);
   
@@ -57,6 +58,7 @@ const StatusCalculator = () => {
     const newErrors: {
       xRnt?: string;
       rntToBuy?: string;
+      paymentMethod?: string;
     } = {};
 
     if (xRntAmount && (isNaN(parseFloat(xRntAmount)) || parseFloat(xRntAmount) < 0)) {
@@ -65,6 +67,10 @@ const StatusCalculator = () => {
 
     if (!rntToBuy || isNaN(parseFloat(rntToBuy)) || parseFloat(rntToBuy) <= 0) {
       newErrors.rntToBuy = "Por favor, introduce una cantidad válida de RNT";
+    }
+
+    if (!paymentMethod) {
+      newErrors.paymentMethod = "Por favor, selecciona un método de pago";
     }
 
     setErrors(newErrors);
@@ -209,8 +215,14 @@ const StatusCalculator = () => {
                 <Label htmlFor="payment" className="text-accent font-semibold mb-2 block">
                   Método de pago
                 </Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="bg-input border-none text-foreground">
+                <Select 
+                  value={paymentMethod} 
+                  onValueChange={(value) => {
+                    setPaymentMethod(value);
+                    setErrors((prev) => ({ ...prev, paymentMethod: undefined }));
+                  }}
+                >
+                  <SelectTrigger className={`bg-input border-none text-foreground ${errors.paymentMethod ? "border-2 border-red-500" : ""}`}>
                     <SelectValue placeholder="Selecciona..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -219,6 +231,7 @@ const StatusCalculator = () => {
                     <SelectItem value="crypto">Cripto (USDT / USDC en Polygon)</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.paymentMethod && <p className="text-sm text-red-500 mt-1">{errors.paymentMethod}</p>}
                 <p className="text-sm text-muted-foreground mt-2">
                   ¿Prefieres pagar por transferencia en €/$ o con USDT/USDC en Polygon?
                 </p>
