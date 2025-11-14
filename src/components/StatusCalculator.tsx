@@ -215,9 +215,7 @@ const StatusCalculator = () => {
                   Cambio USDT → EUR
                 </Label>
                 <Input id="usdt-eur" type="text" value={formatNumber(usdtEurRate, 4)} readOnly className="bg-input border-none text-foreground" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  {loading ? 'Cargando tipo de cambio...' : `Ejemplo: si 1 USDT = ${formatNumber(usdtEurRate, 2)} €, escribe ${formatNumber(usdtEurRate, 2)}`}
-                </p>
+                
               </div>
 
               <div>
@@ -230,14 +228,7 @@ const StatusCalculator = () => {
                 </p>
               </div>
 
-              <div className="flex gap-3">
-                <Button onClick={calculateFinalPrice} className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold py-6 text-lg">
-                  Calcular precio final
-                </Button>
-                <Button onClick={resetCalculator} variant="outline" className="bg-transparent border-2 border-muted-foreground text-muted-foreground hover:bg-muted-foreground hover:text-background font-semibold py-6">
-                  Resetear
-                </Button>
-              </div>
+              
 
               {showResults && <div className="mt-6 p-6 bg-accent/10 border-2 border-accent rounded-lg space-y-4">
                   <h3 className="text-accent font-bold text-lg mb-4">Resultado del cálculo:</h3>
