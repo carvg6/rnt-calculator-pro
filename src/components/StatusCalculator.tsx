@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,10 @@ import { useCryptoPrice } from "@/hooks/useCryptoPrice";
 import { Card } from "@/components/ui/card";
 import logo from "@/assets/reental-logo.png";
 import { formatNumber } from "@/lib/utils";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Download } from "lucide-react";
 import { toast } from "sonner";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const StatusCalculator = () => {
   const [xRntAmount, setXRntAmount] = useState<string>("");
@@ -25,10 +27,13 @@ const StatusCalculator = () => {
     rntToBuy?: string;
     paymentMethod?: string;
   }>({});
-
-  const { rntPrice, usdtEurRate, loading } = useCryptoPrice();
+  const resultRef = useRef<HTMLDivElement>(null);
+  const {
+    rntPrice,
+    usdtEurRate,
+    loading
+  } = useCryptoPrice();
   const walletAddress = "0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1";
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(walletAddress);
@@ -47,44 +52,35 @@ const StatusCalculator = () => {
     const discount = statusType === "superreentel" && xRnt >= 8000 ? 30 : 20;
     setCalculatedDiscount(discount);
   }, [xRntAmount, statusType]);
-
   const validateInputs = () => {
     const newErrors: {
       xRnt?: string;
       rntToBuy?: string;
       paymentMethod?: string;
     } = {};
-
     if (xRntAmount && (isNaN(parseFloat(xRntAmount)) || parseFloat(xRntAmount) < 0)) {
       newErrors.xRnt = "Por favor, introduce solo números válidos";
     }
-
     if (!rntToBuy || isNaN(parseFloat(rntToBuy)) || parseFloat(rntToBuy) <= 0) {
       newErrors.rntToBuy = "Por favor, introduce una cantidad válida de RNT";
     }
-
     if (!paymentMethod) {
       newErrors.paymentMethod = "Por favor, selecciona un método de pago";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const calculateFinalPrice = () => {
     if (!validateInputs()) {
       return;
     }
-
     const rntQuantity = parseFloat(rntToBuy) || 0;
     const basePrice = rntQuantity * rntPrice;
     const discountMultiplier = (100 - calculatedDiscount) / 100;
     const priceWithDiscount = basePrice * discountMultiplier;
-
     setFinalPrice(priceWithDiscount);
     setShowResults(true);
   };
-
   const resetCalculator = () => {
     setXRntAmount("");
     setStatusType("superreentel");
@@ -95,7 +91,6 @@ const StatusCalculator = () => {
     setShowResults(false);
     setErrors({});
   };
-
   const calculateMissing = () => {
     const current = parseFloat(xRntAmount) || 0;
     const needed = statusType === "reentelpro" ? 14000 : 28000;
@@ -103,272 +98,334 @@ const StatusCalculator = () => {
     setRntToBuy(missing.toString());
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <img src={logo} alt="Reental Logo" className="h-16 mx-auto mb-4" />
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Calculadora de Status RNT
-          </h1>
-          <p className="text-gray-600">
-            Calcula tu precio final con descuentos exclusivos
-          </p>
+  const downloadAsImage = async (format: "png" | "jpeg") => {
+    if (!resultRef.current) return;
+
+    try {
+      const canvas = await html2canvas(resultRef.current, {
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card').trim(),
+        scale: 2,
+      });
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `reental-calculo.${format}`;
+          link.click();
+          URL.revokeObjectURL(url);
+          toast.success(`Descargado como ${format.toUpperCase()}`);
+        }
+      }, `image/${format}`);
+    } catch (error) {
+      toast.error("Error al descargar la imagen");
+    }
+  };
+
+  const downloadAsPDF = async () => {
+    if (!resultRef.current) return;
+
+    try {
+      const canvas = await html2canvas(resultRef.current, {
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card').trim(),
+        scale: 2,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save("reental-calculo.pdf");
+      toast.success("Descargado como PDF");
+    } catch (error) {
+      toast.error("Error al descargar el PDF");
+    }
+  };
+  return <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <img src={logo} alt="Reental Logo" className="w-24 h-24 mx-auto mb-4" />
+          <h1 className="text-4xl font-bold text-accent mb-2">Calculadora de Estatus</h1>
         </div>
 
-        <Card className="p-8 shadow-xl">
-          <div className="space-y-6">
-            {/* User Data Section */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
-                Datos del Usuario
-              </h2>
-              
-              <div className="space-y-2">
-                <Label htmlFor="xrnt" className="text-base">
-                  Cantidad de xRNT actual
+        {/* Main Grid */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Left Column - Client Data */}
+          <Card className="p-6 border-2 border-accent rounded-xl bg-card">
+            <h2 className="text-xl font-bold text-accent mb-6">1. Datos del cliente</h2>
+
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="xrnt" className="text-accent font-semibold mb-2 block">
+                  $xRNT del cliente
                 </Label>
-                <Input
-                  id="xrnt"
-                  type="number"
-                  value={xRntAmount}
-                  onChange={(e) => setXRntAmount(e.target.value)}
-                  placeholder="Ej: 10000"
-                  className={errors.xRnt ? "border-red-500" : ""}
-                />
-                {errors.xRnt && (
-                  <p className="text-sm text-red-500">{errors.xRnt}</p>
-                )}
+                <Input id="xrnt" type="number" value={xRntAmount} onChange={e => {
+                setXRntAmount(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  xRnt: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.xRnt ? "border-2 border-red-500" : ""}`} placeholder="Ej: 8000, 10000, 28000..." />
+                {errors.xRnt && <p className="text-sm text-red-500 mt-1">{errors.xRnt}</p>}
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base">Selecciona tu Status</Label>
-                <RadioGroup value={statusType} onValueChange={setStatusType}>
-                  <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <RadioGroupItem value="reentelpro" id="reentelpro" />
-                    <Label htmlFor="reentelpro" className="cursor-pointer flex-1">
-                      <div className="font-semibold">ReentelPro</div>
-                      <div className="text-sm text-gray-600">14,000 xRNT - 20% descuento</div>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <RadioGroupItem value="superreentel" id="superreentel" />
-                    <Label htmlFor="superreentel" className="cursor-pointer flex-1">
-                      <div className="font-semibold">SuperReentel</div>
-                      <div className="text-sm text-gray-600">28,000 xRNT - 30% descuento</div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-800 mb-2">
-                  Te faltan {" "}
-                  <span className="font-bold">
-                    {formatNumber(Math.max(0, (statusType === "reentelpro" ? 14000 : 28000) - (parseFloat(xRntAmount) || 0)))}
-                  </span>
-                  {" "} xRNT para alcanzar {statusType === "reentelpro" ? "ReentelPro" : "SuperReentel"}
-                </p>
-                <Button
-                  onClick={calculateMissing}
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                >
-                  Calcular RNT necesarios
-                </Button>
-              </div>
-            </div>
-
-            {/* Exchange Info Section */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
-                Información de Cambio
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-r from-purple-100 to-blue-100 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600">Precio actual RNT</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${loading ? "..." : rntPrice.toFixed(3)}
-                  </p>
+              <RadioGroup value={statusType} onValueChange={setStatusType}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="reentelpro" id="reentelpro" />
+                  <Label htmlFor="reentelpro" className="text-accent font-semibold cursor-pointer">
+                    ReentelPro
+                  </Label>
                 </div>
-                <div className="bg-gradient-to-r from-blue-100 to-green-100 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600">Cambio USDT a EUR</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? "..." : usdtEurRate.toFixed(4)}
-                  </p>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="superreentel" id="superreentel" />
+                  <Label htmlFor="superreentel" className="text-accent font-semibold cursor-pointer">
+                    SuperReentel
+                  </Label>
                 </div>
-              </div>
-            </div>
+              </RadioGroup>
 
-            {/* Purchase Details Section */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
-                Detalles de Compra
-              </h2>
+              <Button onClick={calculateMissing} className="w-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold">
+                Calcular faltantes
+              </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="rntAmount" className="text-base">
-                  Cantidad de RNT a comprar
+              <div>
+                <Label htmlFor="payment" className="text-accent font-semibold mb-2 block">
+                  Método de pago
                 </Label>
-                <Input
-                  id="rntAmount"
-                  type="number"
-                  value={rntToBuy}
-                  onChange={(e) => setRntToBuy(e.target.value)}
-                  placeholder="Ej: 5000"
-                  className={errors.rntToBuy ? "border-red-500" : ""}
-                />
-                {errors.rntToBuy && (
-                  <p className="text-sm text-red-500">{errors.rntToBuy}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod" className="text-base">
-                  Método de Pago
-                </Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger 
-                    id="paymentMethod"
-                    className={errors.paymentMethod ? "border-red-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecciona método de pago" />
+                <Select value={paymentMethod} onValueChange={(value) => {
+                  setPaymentMethod(value);
+                  setErrors(prev => ({ ...prev, paymentMethod: undefined }));
+                }}>
+                  <SelectTrigger className={`bg-input border-none text-foreground ${errors.paymentMethod ? "border-2 border-red-500" : ""}`}>
+                    <SelectValue placeholder="Selecciona..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="usdt">USDT</SelectItem>
-                    <SelectItem value="usdc">USDC</SelectItem>
-                    <SelectItem value="eth">ETH</SelectItem>
-                    <SelectItem value="btc">BTC</SelectItem>
+                    <SelectItem value="transfer-eur">Transferencia en €</SelectItem>
+                    <SelectItem value="transfer-usd">Transferencia en $</SelectItem>
+                    <SelectItem value="crypto">Cripto (USDT / USDC en Polygon)</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.paymentMethod && (
-                  <p className="text-sm text-red-500">{errors.paymentMethod}</p>
-                )}
-              </div>
-
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-green-800">
-                  Descuento aplicado: <span className="font-bold">{calculatedDiscount}%</span>
+                {errors.paymentMethod && <p className="text-sm text-red-500 mt-1">{errors.paymentMethod}</p>}
+                <p className="text-sm text-muted-foreground mt-2">
+                  ¿Prefieres pagar por transferencia en €/$ o con USDT/USDC en Polygon?
                 </p>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 pt-4">
-              <Button
-                onClick={calculateFinalPrice}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                size="lg"
-              >
-                Calcular
-              </Button>
-              <Button
-                onClick={resetCalculator}
-                variant="outline"
-                size="lg"
-              >
-                Limpiar
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* Results Section */}
-        {showResults && (
-          <Card className="mt-8 p-8 shadow-xl bg-gradient-to-br from-white to-blue-50">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-              Resultado del Cálculo
-            </h2>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">xRNT Actuales</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {formatNumber(parseFloat(xRntAmount) || 0)}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">RNT a Comprar</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {formatNumber(parseFloat(rntToBuy) || 0)}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">Status Elegido</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {statusType === "reentelpro" ? "ReentelPro" : "SuperReentel"}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">Método de Pago</p>
-                  <p className="text-xl font-bold text-gray-900 uppercase">
-                    {paymentMethod}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">Descuento Aplicado</p>
-                  <p className="text-xl font-bold text-green-600">
-                    {calculatedDiscount}%
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">Precio RNT</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    ${rntPrice.toFixed(3)}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-sm text-gray-600">Cambio USDT a EUR</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {usdtEurRate.toFixed(4)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-lg shadow-lg">
-                <p className="text-lg text-gray-700 mb-2">Precio Base</p>
-                <p className="text-2xl font-bold text-gray-900 mb-4">
-                  ${formatNumber((parseFloat(rntToBuy) || 0) * rntPrice)}
-                </p>
-
-                <p className="text-lg text-gray-700 mb-2">Con descuento del {calculatedDiscount}%</p>
-                <p className="text-4xl font-bold text-green-600">
-                  ${formatNumber(finalPrice)}
-                </p>
-                {paymentMethod === "usdt" && (
-                  <p className="text-xl text-gray-700 mt-2">
-                    ≈ €{formatNumber(finalPrice * usdtEurRate)}
-                  </p>
-                )}
-              </div>
-
-              {paymentMethod && (
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">
-                    Dirección de pago ({paymentMethod.toUpperCase()})
-                  </p>
-                  <div className="flex items-center gap-2 bg-white p-3 rounded border">
-                    <code className="flex-1 text-sm break-all">{walletAddress}</code>
-                    <Button
-                      onClick={copyToClipboard}
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0"
-                    >
+              {paymentMethod === "crypto" && <div>
+                  <Label htmlFor="wallet" className="text-accent font-semibold mb-2 block">
+                    Wallet (para pagos en USDT/USDC Polygon)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input id="wallet" type="text" value={walletAddress} readOnly className="bg-input border-none text-foreground font-mono text-sm flex-1" />
+                    <Button type="button" onClick={copyToClipboard} className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background" size="icon">
                       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </div>
           </Card>
-        )}
-      </div>
-    </div>
-  );
-};
 
+          {/* Right Column - Exchange & Discount */}
+          <Card className="p-6 border-2 border-accent rounded-xl bg-card">
+            <h2 className="text-xl font-bold text-accent mb-6">2. Cambio y descuento</h2>
+
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="rnt-amount" className="text-accent font-semibold mb-2 block">
+                  Cantidad de $RNT a comprar
+                </Label>
+                <Input id="rnt-amount" type="number" value={rntToBuy} onChange={e => {
+                setRntToBuy(e.target.value);
+                setErrors(prev => ({
+                  ...prev,
+                  rntToBuy: undefined
+                }));
+              }} className={`bg-input border-none text-foreground ${errors.rntToBuy ? "border-2 border-red-500" : ""}`} placeholder="Ej: 8000 o 28000" />
+                {errors.rntToBuy && <p className="text-sm text-red-500 mt-1">{errors.rntToBuy}</p>}
+                <p className="text-sm text-muted-foreground mt-1">
+                  RNT que el cliente necesita adquirir para conseguir su estatus.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="rnt-price" className="text-accent font-semibold mb-2 block">
+                  Precio $RNT (USDT por 1 $RNT)
+                </Label>
+                <Input id="rnt-price" type="text" value={formatNumber(rntPrice, 4)} readOnly className="bg-input border-none text-foreground" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  {loading ? "Cargando precio en tiempo real..." : "Precio en tiempo real del $RNT en el par RNT/USDT (Polygon)."}
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="usdt-eur" className="text-accent font-semibold mb-2 block">
+                  Cambio USDT → EUR
+                </Label>
+                <Input id="usdt-eur" type="text" value={formatNumber(usdtEurRate, 4)} readOnly className="bg-input border-none text-foreground" />
+              </div>
+
+              <div>
+                <Label htmlFor="discount" className="text-accent font-semibold mb-2 block">
+                  % Descuento aplicado
+                </Label>
+                <Input id="discount" type="number" value={calculatedDiscount} readOnly className="bg-input border-none text-foreground" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  {statusType === "superreentel" && parseFloat(xRntAmount) >= 8000 ? "30% de descuento (ReentelPro con +8000 xRNT)" : "20% de descuento"}
+                </p>
+              </div>
+
+              <div className="flex gap-4">
+                <Button onClick={calculateFinalPrice} className="flex-1 bg-accent text-background hover:bg-accent/90 font-semibold">
+                  Calcular
+                </Button>
+                <Button onClick={resetCalculator} className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold">
+                  Resetear
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Results Section - Full Width */}
+        {showResults && <Card ref={resultRef} className="p-6 border-2 border-accent rounded-xl bg-card mb-8">
+            <div className="flex items-center justify-center mb-6">
+              <img src={logo} alt="Reental Logo" className="w-16 h-16" />
+            </div>
+            <h3 className="text-accent font-bold text-xl mb-6 text-center">Resultado del cálculo</h3>
+
+            {/* Client Information */}
+            <div className="grid md:grid-cols-2 gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
+              <div>
+                <span className="text-muted-foreground text-sm block">xRNT del cliente:</span>
+                <span className="font-semibold text-foreground">{xRntAmount ? formatNumber(parseFloat(xRntAmount), 0) : '0'} xRNT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">RNT a comprar:</span>
+                <span className="font-semibold text-foreground">{formatNumber(parseFloat(rntToBuy), 0)} RNT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Estatus:</span>
+                <span className="font-semibold text-foreground">{statusType === "reentelpro" ? "ReentelPro" : "SuperReentel"}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Método de pago:</span>
+                <span className="font-semibold text-foreground">
+                  {paymentMethod === "transfer-eur" ? "Transferencia en €" : 
+                   paymentMethod === "transfer-usd" ? "Transferencia en $" : 
+                   "Cripto (USDT/USDC)"}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Precio $RNT:</span>
+                <span className="font-semibold text-foreground">{formatNumber(rntPrice, 4)} USDT</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Cambio USDT → EUR:</span>
+                <span className="font-semibold text-foreground">{formatNumber(usdtEurRate, 4)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-sm block">Descuento aplicado:</span>
+                <span className="font-semibold text-green-600 dark:text-green-400">{calculatedDiscount}%</span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <span className="text-muted-foreground text-sm block">Precio sin descuento:</span>
+                <div>
+                  {paymentMethod === "transfer-eur" ? <>
+                      <span className="font-bold text-foreground text-2xl block">
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice * usdtEurRate, 2)} EUR
+                      </span>
+                      <span className="text-muted-foreground text-sm block">
+                        ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                      </span>
+                    </> : paymentMethod === "transfer-usd" ? <>
+                      <span className="font-bold text-foreground text-2xl block">
+                        {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USD
+                      </span>
+                      <span className="text-muted-foreground text-sm block">
+                        ≈ {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                      </span>
+                    </> : <span className="font-bold text-foreground text-2xl block">
+                      {formatNumber(parseFloat(rntToBuy) * rntPrice, 2)} USDT
+                    </span>}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-muted-foreground text-sm block">Descuento aplicado ({calculatedDiscount}%):</span>
+                <span className="font-bold text-green-600 dark:text-green-400 text-2xl block">
+                  -
+                  {paymentMethod === "transfer-eur" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate / 100, 2) + " EUR" : paymentMethod === "transfer-usd" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USD" : formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USDT"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-accent font-bold text-sm block">TOTAL A PAGAR:</span>
+                <div className="text-right md:text-left">
+                  {paymentMethod === "transfer-eur" ? <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice * usdtEurRate, 2)} EUR</p> : paymentMethod === "transfer-usd" ? <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USD</p> : <p className="text-3xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <p className="text-base text-green-600 dark:text-green-400 font-medium text-center">
+                  💰 Te ahorras{" "}
+                  {paymentMethod === "transfer-eur" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount * usdtEurRate / 100, 2) + " EUR" : paymentMethod === "transfer-usd" ? formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USD" : formatNumber(parseFloat(rntToBuy) * rntPrice * calculatedDiscount / 100, 2) + " USDT"}{" "}
+                  con este descuento
+                </p>
+              </div>
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium text-center">
+                  ⚠️ El precio proporcionado tendrá una validez de 24 horas, pasado este tiempo ya no será válido y
+                  tendrá que calcularlo de nuevo.
+                </p>
+              </div>
+
+              <div className="border-t border-accent pt-4">
+                <p className="text-sm text-muted-foreground mb-3 text-center">
+                  Descargar resultado del cálculo:
+                </p>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  <Button
+                    onClick={() => downloadAsImage("png")}
+                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    PNG
+                  </Button>
+                  <Button
+                    onClick={() => downloadAsImage("jpeg")}
+                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    JPEG
+                  </Button>
+                  <Button
+                    onClick={downloadAsPDF}
+                    className="bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>}
+
+        {/* Footer */}
+        <div className="text-center text-muted-foreground text-sm border-t border-accent pt-4">
+          Reental · Calculadora $RNT · Uso interno comercial
+        </div>
+      </div>
+    </div>;
+};
 export default StatusCalculator;
