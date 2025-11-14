@@ -8,16 +8,19 @@ export const useCryptoPrice = () => {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        // Fetch RNT price from CoinGecko (using a placeholder token for demo)
-        // Replace 'reental' with actual CoinGecko ID when available
+        // Fetch RNT price from CoinGecko
         const rntResponse = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'
+          'https://api.coingecko.com/api/v3/simple/price?ids=reental&vs_currencies=usd'
         );
         const rntData = await rntResponse.json();
         
-        // For demo purposes, using a simulated RNT price
-        // In production, replace with actual RNT token
-        setRntPrice(0.183);
+        // Set actual RNT price from CoinGecko
+        if (rntData.reental?.usd) {
+          setRntPrice(rntData.reental.usd);
+        } else {
+          // Fallback if API fails
+          setRntPrice(0.183);
+        }
 
         // Fetch USDT/EUR rate
         const usdtEurResponse = await fetch(
