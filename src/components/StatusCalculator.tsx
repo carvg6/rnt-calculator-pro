@@ -228,6 +228,15 @@ const StatusCalculator = () => {
                 </p>
               </div>
 
+              <div className="flex gap-4">
+                <Button onClick={calculateFinalPrice} className="flex-1 bg-accent text-background hover:bg-accent/90 font-semibold">
+                  Calcular
+                </Button>
+                <Button onClick={resetCalculator} className="flex-1 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold">
+                  Resetear
+                </Button>
+              </div>
+
               
 
               {showResults && <div className="mt-6 p-6 bg-accent/10 border-2 border-accent rounded-lg space-y-4">
