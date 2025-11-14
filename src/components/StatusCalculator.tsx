@@ -21,12 +21,12 @@ const StatusCalculator = () => {
 
   const walletAddress = '0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1';
 
-  // Calculate discount based on xRNT amount
+  // Calculate discount based on xRNT amount and status type
   useEffect(() => {
     const xRnt = parseFloat(xRntAmount) || 0;
-    const discount = xRnt >= 8000 ? 30 : 20;
+    const discount = (statusType === 'superreentel' && xRnt >= 8000) ? 30 : 20;
     setCalculatedDiscount(discount);
-  }, [xRntAmount]);
+  }, [xRntAmount, statusType]);
 
   const calculateFinalPrice = () => {
     const rntQuantity = parseFloat(rntToBuy) || 0;
@@ -209,9 +209,9 @@ const StatusCalculator = () => {
                   className="bg-input border-none text-foreground"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  {parseFloat(xRntAmount) >= 8000 
-                    ? '30% de descuento (tiene +8000 xRNT)' 
-                    : '20% de descuento (sin xRNT o menos de 8000)'}
+                  {(statusType === 'superreentel' && parseFloat(xRntAmount) >= 8000)
+                    ? '30% de descuento (SuperReentel con +8000 xRNT)' 
+                    : '20% de descuento'}
                 </p>
               </div>
 
