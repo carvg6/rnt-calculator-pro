@@ -39,6 +39,7 @@ const StatusCalculator = () => {
   // Calculate discount based on xRNT amount and status type
   useEffect(() => {
     const xRnt = parseFloat(xRntAmount) || 0;
+    // 30% for SuperReentel with >= 8000 xRNT, 20% for all others
     const discount = statusType === "superreentel" && xRnt >= 8000 ? 30 : 20;
     setCalculatedDiscount(discount);
   }, [xRntAmount, statusType]);
@@ -309,10 +310,34 @@ const StatusCalculator = () => {
                     <div className="flex justify-between items-center pt-2">
                       <span className="text-accent font-bold text-lg">TOTAL A PAGAR:</span>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-accent">{formatNumber(finalPrice, 2)} USDT</p>
-                        <p className="text-lg text-muted-foreground">
-                          ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
-                        </p>
+                        {paymentMethod === "transfer-eur" ? (
+                          <>
+                            <p className="text-2xl font-bold text-accent">
+                              {formatNumber(finalPrice * usdtEurRate, 2)} EUR
+                            </p>
+                            <p className="text-lg text-muted-foreground">
+                              ≈ {formatNumber(finalPrice, 2)} USDT
+                            </p>
+                          </>
+                        ) : paymentMethod === "transfer-usd" ? (
+                          <>
+                            <p className="text-2xl font-bold text-accent">
+                              {formatNumber(finalPrice, 2)} USD
+                            </p>
+                            <p className="text-lg text-muted-foreground">
+                              ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-2xl font-bold text-accent">
+                              {formatNumber(finalPrice, 2)} USDT
+                            </p>
+                            <p className="text-lg text-muted-foreground">
+                              ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
