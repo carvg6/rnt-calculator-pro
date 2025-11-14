@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCryptoPrice } from '@/hooks/useCryptoPrice';
 import { Card } from '@/components/ui/card';
 import logo from '@/assets/reental-logo.png';
+import { formatNumber } from '@/lib/utils';
 
 const StatusCalculator = () => {
   const [xRntAmount, setXRntAmount] = useState<string>('8000');
@@ -171,8 +172,8 @@ const StatusCalculator = () => {
                 </Label>
                 <Input
                   id="rnt-price"
-                  type="number"
-                  value={rntPrice.toFixed(4)}
+                  type="text"
+                  value={formatNumber(rntPrice, 4)}
                   readOnly
                   className="bg-input border-none text-foreground"
                 />
@@ -187,13 +188,13 @@ const StatusCalculator = () => {
                 </Label>
                 <Input
                   id="usdt-eur"
-                  type="number"
-                  value={usdtEurRate.toFixed(4)}
+                  type="text"
+                  value={formatNumber(usdtEurRate, 4)}
                   readOnly
                   className="bg-input border-none text-foreground"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  {loading ? 'Cargando tipo de cambio...' : `Ejemplo: si 1 USDT = ${usdtEurRate.toFixed(2)} €, escribe ${usdtEurRate.toFixed(2)}`}
+                  {loading ? 'Cargando tipo de cambio...' : `Ejemplo: si 1 USDT = ${formatNumber(usdtEurRate, 2)} €, escribe ${formatNumber(usdtEurRate, 2)}`}
                 </p>
               </div>
 
@@ -226,10 +227,10 @@ const StatusCalculator = () => {
                 <div className="mt-6 p-4 bg-accent/10 border-2 border-accent rounded-lg">
                   <h3 className="text-accent font-bold mb-2">Resultado:</h3>
                   <p className="text-2xl font-bold text-foreground">
-                    {finalPrice.toFixed(2)} USDT
+                    {formatNumber(finalPrice, 2)} USDT
                   </p>
                   <p className="text-lg text-muted-foreground">
-                    ≈ {(finalPrice * usdtEurRate).toFixed(2)} EUR
+                    ≈ {formatNumber(finalPrice * usdtEurRate, 2)} EUR
                   </p>
                 </div>
               )}
