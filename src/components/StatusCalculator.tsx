@@ -108,7 +108,7 @@ const StatusCalculator = () => {
             <div className="space-y-6">
               <div>
                 <Label htmlFor="xrnt" className="text-accent font-semibold mb-2 block">
-                  $xRNT del usuario
+                  ¿Cuántos xRNT tienes?
                 </Label>
                 <Input
                   id="xrnt"
