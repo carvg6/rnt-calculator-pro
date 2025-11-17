@@ -146,7 +146,7 @@ const StatusCalculator = () => {
                 onClick={calculateMissing}
                 className="w-full bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-background font-semibold"
               >
-                Calcular faltantes
+                Calcular restantes
               </Button>
 
               <div>
