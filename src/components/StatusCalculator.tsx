@@ -26,7 +26,7 @@ const StatusCalculator = () => {
     paymentMethod?: string;
   }>({});
   const { rntPrice, usdtEurRate, loading } = useCryptoPrice();
-  const walletAddress = "0x4495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1";
+  const walletAddress = "0x495Ba59116F7dF7AC6C438638AaDA85a6D6Cb0F1";
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(walletAddress);
