@@ -127,20 +127,25 @@ const StatusCalculator = () => {
                 {errors.xRnt && <p className="text-sm text-red-500 mt-1">{errors.xRnt}</p>}
               </div>
 
-              <RadioGroup value={statusType} onValueChange={setStatusType}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="reentelpro" id="reentelpro" />
-                  <Label htmlFor="reentelpro" className="text-accent font-semibold cursor-pointer">
-                    ReentelPro
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="superreentel" id="superreentel" />
-                  <Label htmlFor="superreentel" className="text-accent font-semibold cursor-pointer">
-                    SuperReentel
-                  </Label>
-                </div>
-              </RadioGroup>
+              <div>
+                <Label className="text-accent font-semibold mb-2 block">
+                  ¿Qué estatus quieres obtener?
+                </Label>
+                <RadioGroup value={statusType} onValueChange={setStatusType}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="reentelpro" id="reentelpro" />
+                    <Label htmlFor="reentelpro" className="text-accent font-semibold cursor-pointer">
+                      ReentelPro
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="superreentel" id="superreentel" />
+                    <Label htmlFor="superreentel" className="text-accent font-semibold cursor-pointer">
+                      SuperReentel
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
 
               <Button
                 onClick={calculateMissing}
